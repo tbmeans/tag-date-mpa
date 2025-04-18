@@ -1,0 +1,26 @@
+{
+  "name": "tag-date-mpa",
+  "version": "1.0.0",
+  "description": "consumes mozilla pocket api",
+  "keywords": [
+    "serverless"
+  ],
+  "homepage": "https://github.com/tbmeans/tag-date-mpa#readme",
+  "bugs": {
+    "url": "https://github.com/tbmeans/tag-date-mpa/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tbmeans/tag-date-mpa.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Timothy B. Means",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
