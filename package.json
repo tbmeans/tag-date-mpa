@@ -21,6 +21,10 @@
     "test": "jest"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@netlify/functions": "^3.0.4"
   }
 }
