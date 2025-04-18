@@ -33,7 +33,10 @@ const render = (message: string, nexRoute: string) => {
 // In the Fetch API interface "Request", cookie-get looks like req.headers.get("Cookie")
 
 export default async (req: Request, context: Context) => {
-	return new Response(render(Consts.MSG1, Consts.NEX1));
+	return new Response(render(Consts.MSG1, Consts.NEX1), {
+		status: 200,
+		headers: { "Content-Type": "text/html" }
+	});
 }
 
 export const config: Config = {
