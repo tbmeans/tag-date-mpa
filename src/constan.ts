@@ -22,13 +22,15 @@ export enum Consts {
 	MSG4 = "Organize your saves.",
 	NEX1 = "login",
 	NEX2 = "auth",
-	NEX3 = "saves-dash",
+	NEX3 = "dash",
+	NEX4 = "confirm",
+	ADDR = 'https://tag-date.netlify.app/',
 	COD1 = 'const DEST = "https://getpocket.com/auth/authorize?request_token=',
-	COD2 = '&redirect_uri=https://tag-date.netlify.app/"; ',
-	COD3 = 'const promcall = (res) => { setTimeout(() => res(DEST), 1000); }; ' +
-			'const delay = () => new Promise(promcall); const redir = async ' +
+	COD2 = '&redirect_uri=' + ADDR,
+	COD3 = '"; const promcall = (res) => { setTimeout(() => res(DEST), 1000); ' +
+			'}; const delay = () => new Promise(promcall); const redir = async ' +
 					'function() { window.location.href = await delay(); }; redir();',
-	COD4 = 'const DEST = "https://tag-date.netlify.app/";',
+	COD4 = 'const DEST = "' + ADDR,
 	KEY1 = 'token',
 	KEY2 = 'username',
 	DOCH = '<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> ' +
@@ -51,4 +53,9 @@ export enum Consts {
 	API1 = 'https://getpocket.com/v3',
 	OPTS = "; Secure; HttpOnly",
 	ERR1 = "Problem with API request: ",
+	PRF1 = "oldest",
+	PRF2 = "30",
+	PRF3 = "1",
+	PRF4 = "complete",
+	BTN2 = '<button type="button">Dashboard</button>',
 }
