@@ -24,8 +24,8 @@ const index = {
 			Consts.DOCH,
 			Consts.STY1,
 			Consts.BODH,
-			'<main><p>' + data.message + '</p>',
-			'<a href="' + data.nexRoute + '">' + Consts.BTN1 + '</a></main>',
+			`<main> <p>${data.message}</p>`,
+			`<a href="${data.nexRoute}">${Consts.BTN1}</a> </main>`,
 			Consts.FOOT,
 			Consts.DOCC,
 		].join(' ');
@@ -34,14 +34,19 @@ const index = {
 
 const login = {
 	render: (data: PageData): string => {
+		const bodscript = [
+			Consts.COD1,
+			data.token,
+			Consts.COD2,
+			data.nexRoute,
+			Consts.COD3
+		].join('');
 		return [
 			Consts.DOCH,
 			Consts.STY1,
 			Consts.BODH,
-			'<main><p>' + data.message + '</p></main>',
-			'<script>',
-			Consts.COD1 + data.token + Consts.COD2 + data.nexRoute + Consts.COD3,
-			'</script>',
+			`<main> <p>${data.message}</p> </main>`,
+			`<script> ${bodscript} </script>`,
 			Consts.FOOT,
 			Consts.DOCC,
 		].join(' ');
@@ -50,12 +55,17 @@ const login = {
 
 const auth = {
 	render: (data: PageData): string => {
+		const bodscript = [
+			Consts.COD4,
+			data.nexRoute,
+			Consts.COD3
+		].join('');
 		return [
 			Consts.DOCH,
 			Consts.STY1,
 			Consts.BODH,
-			'<main><p>' + data.message + '</p></main>',
-			'<script>' + Consts.COD4 + data.nexRoute + Consts.COD3 + '</script>',
+			`<main> <p>${data.message}</p> </main>`,
+			`<script> ${bodscript} </script>`,
 			Consts.FOOT,
 			Consts.DOCC,
 		].join(' ');
@@ -68,19 +78,21 @@ const app1 = {
 			console.log(Object.keys(list[0])); // I want to know if Pocket has a timestamp of when each item was saved. API Docs don't say.
 			if (typeof list[0] === 'string') {
 				// It's an error message.
-				return '<p>' + list[0] + '</p>';
+				return `<p>${list[0]}</p>`;
 			}
 			return list.map(item => {
-				return ('<p id="' + item.item_id + '"><a href="' + item.given_url +
-						'">' + item.given_title + '</a></p>');
+				return [
+					`<p id="${item.item_id}">`,
+					`<a href="${item.given_url}">${item.given_title}</a> </p>`
+				].join(' ');
 			}).join(' ');
 		};
 		return [
 			Consts.DOCH,
 			Consts.STY1,
 			Consts.BODH,
-			'<main><p>' + data.message + '</p>',
-			uibod(data.list) + ' </main>',
+			`<main> <p>${data.message}</p>`,
+			`${uibod(data.list)} </main>`,
 			Consts.FOOT,
 			Consts.DOCC,
 		].join(' ');
@@ -93,8 +105,8 @@ const app2 = {
 			Consts.DOCH,
 			Consts.STY1,
 			Consts.BODH,
-			'<main><p>' + data.message + '</p>',
-			'<a href="' + data.nexRoute + '">' + Consts.BTN2 + '</a></main>',
+			`<main> <p>${data.message}</p>`,
+			`<a href="${data.nexRoute}">${Consts.BTN2}</a> </main>`,
 			Consts.FOOT,
 			Consts.DOCC,
 		].join(' ');
