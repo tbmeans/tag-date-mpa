@@ -18,99 +18,51 @@
 import { PageData } from "./pageData";
 import { Consts } from "./constan";
 
-const index = {
-	render: (data: PageData): string => {
-		return [
-			Consts.DOCH,
-			Consts.STY1,
-			Consts.BODH,
-			`<main> <p>${data.message}</p>`,
-			`<a href="${data.nexRoute}">${Consts.BTN1}</a> </main>`,
-			Consts.FOOT,
-			Consts.DOCC,
-		].join(' ');
-	},
-};
+export default function render(data: PageData): string {
+	const btnOpt = [
+		`<a href="${data.nexRoute}">`,
+		`<button type="button">${data.buttonLabel}</button> </a>`,
+	].join(' ');
 
-const login = {
-	render: (data: PageData): string => {
-		const bodscript = [
-			Consts.COD1,
-			data.token,
-			Consts.COD2,
-			data.nexRoute,
-			Consts.COD3
-		].join('');
-		return [
-			Consts.DOCH,
-			Consts.STY1,
-			Consts.BODH,
-			`<main> <p>${data.message}</p> </main>`,
-			`<script> ${bodscript} </script>`,
-			Consts.FOOT,
-			Consts.DOCC,
-		].join(' ');
-	},
-};
+	const uibod = (list: any[]): string => {
+		console.log(Object.keys(list[0])); 
+		// I want to know if Pocket has a timestamp of when each item was saved. API Docs don't say.
+		if (typeof list[0] === 'string') {
+			// It's an error message.
+			return `<p>${list[0]}</p>`;
+		}
+		return list.map(item => {
+			return [
+				`<p id="${item.item_id}">`,
+				`<a href="${item.given_url}">${item.given_title}</a> </p>`
+			].join(' ');
+		}).join(' ');
+	};
 
-const auth = {
-	render: (data: PageData): string => {
-		const bodscript = [
-			Consts.COD4,
-			data.nexRoute,
-			Consts.COD3
-		].join('');
-		return [
-			Consts.DOCH,
-			Consts.STY1,
-			Consts.BODH,
-			`<main> <p>${data.message}</p> </main>`,
-			`<script> ${bodscript} </script>`,
-			Consts.FOOT,
-			Consts.DOCC,
-		].join(' ');
-	},
-};
+	const scrOpt = [
+		'<script> ',
+	].concat(data.nexRoute === Consts.NEX2 && [
+		Consts.COD1,
+		data.token,
+		Consts.COD2,
+	] || []).concat(data.nexRoute === Consts.NEX3 && [
+		Consts.COD4,
+	] || []).concat([
+		data.nexRoute,
+		Consts.COD3,
+		' </script>',
+	]).join('');
 
-const app1 = {
-	render: (data: PageData): string => {
-		const uibod = (list: any[]): string => {
-			console.log(Object.keys(list[0])); // I want to know if Pocket has a timestamp of when each item was saved. API Docs don't say.
-			if (typeof list[0] === 'string') {
-				// It's an error message.
-				return `<p>${list[0]}</p>`;
-			}
-			return list.map(item => {
-				return [
-					`<p id="${item.item_id}">`,
-					`<a href="${item.given_url}">${item.given_title}</a> </p>`
-				].join(' ');
-			}).join(' ');
-		};
-		return [
-			Consts.DOCH,
-			Consts.STY1,
-			Consts.BODH,
-			`<main> <p>${data.message}</p>`,
-			`${uibod(data.list)} </main>`,
-			Consts.FOOT,
-			Consts.DOCC,
-		].join(' ');
-	},
-};
-
-const app2 = {
-	render: (data: PageData): string => {
-		return [
-			Consts.DOCH,
-			Consts.STY1,
-			Consts.BODH,
-			`<main> <p>${data.message}</p>`,
-			`<a href="${data.nexRoute}">${Consts.BTN2}</a> </main>`,
-			Consts.FOOT,
-			Consts.DOCC,
-		].join(' ');
-	},
-};
-
-export default { index, login, auth, app1, app2 };
+	return [
+		Consts.DOCH,
+		Consts.STY1,
+		Consts.BODH,
+		`<main> <p>${data.message}</p>`,
+		data.isButton && btnOpt || '',
+		data.isList && uibod(data.list) || '',
+		'</main>',
+		data.isScript && scrOpt || '',
+		Consts.FOOT,
+		'</body></html>',
+	].join(' ');
+}

@@ -15,9 +15,17 @@
    limitations under the License.
 */
 
+// should just make this the model, as a class, 
+// and a fetch for a method like cookie class
+// but then should this go to apirequests file?
+// how about apirequests goes into model too?
 export interface PageData {
 	message: string;
+    isButton: boolean;
+    buttonLabel: string;
+    isList: boolean;
+    list: object[] | string[];
+    isScript: boolean;
 	nexRoute: string;
 	token: string;
-	list: object[] | string[];
 }
