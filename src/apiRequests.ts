@@ -136,7 +136,7 @@ export class AuthCookies {
 			vals[0] = `${Consts.ERR1} error ${err.message}`;
 		}
 		if (vals[1]) {
-			vals.map((v, x) => keys[x] + '=' + v + Consts.OPTS)
+			vals.map((v, x) => `${keys[x]}=${v}; Secure; HttpOnly`);
 		}
 		return new AuthCookies(vals);
 	}
