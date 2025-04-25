@@ -44,7 +44,7 @@ export interface V3Body {
 	actions?: V3Action[];
 }
 
-const listParams = function(
+export function listParams(
 	route: string,
 	token: string = '',
 	data: V3Body = {}
@@ -101,33 +101,74 @@ const listParams = function(
 	};
 };
 
-const toOAuthCookie = async function(params: FetchParams): Promise<string[]> {
-	const { input, options } = params;
-	const keys = [ 'token', 'username' ];
-	const vals: any[] = [];
-	try {
-		const res = await fetch(input, options);
-		/* MDN does this in developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-		if (res.ok === false) {
-			throw new Error(`Status: ${res.status}`);
-		}
-		*/
-		const jsn = await res.json();
-		const [ dat1, dat2 ] = Object.values(JSON.parse(jsn));
-		vals[0] = dat1;
-		if (dat2) {
-			vals[1] = dat2;
-		}
-	} catch (err) {
-		vals[0] = Consts.ERR1 + err.message;
-	}
-	return (vals[0].includes(Consts.ERR1) && vals ||
-			vals.map((v, x) => keys[x] + '=' + v + Consts.OPTS));
-};
+export class AuthCookies {
+	list: string[];
 
-const extractValue = (cookie: string) => {
-	return cookie.slice(cookie.indexOf('=') + 1, cookie.indexOf(';'))
-};
+	constructor(list: string[]) {
+		this.list = list;
+	}
+
+	static fromClient(req: Request) {
+		const cookiesJoined = req.headers.get("Cookie");
+		if (cookiesJoined == null) {
+			return new AuthCookies([ 'null' ]);
+		}
+		return new AuthCookies(cookiesJoined.split(';'));
+	}
+
+	static async fromFetch(params: FetchParams): Promise<AuthCookies> {
+		const { input, options } = params;
+		const keys = [ 'token', 'username' ];
+		const vals: string[] = [];
+		try {
+			const res = await fetch(input, options);
+			if (res.ok === false) {
+				const errmsg: string = `${Consts.ERR1} status ${res.status}`;
+				vals[0] = errmsg;
+				throw new Error(errmsg);
+			} else {
+				const jsn = await res.json();
+				const [ dat1, dat2 ]: string[] = Object.values(JSON.parse(jsn));
+				vals[0] = dat1;
+				vals[1] = dat2;
+			}
+		} catch (err) {
+			vals[0] = `${Consts.ERR1} error ${err.message}`;
+		}
+		if (vals[1]) {
+			vals.map((v, x) => keys[x] + '=' + v + Consts.OPTS)
+		}
+		return new AuthCookies(vals);
+	}
+
+	static value(cookie: string) {
+		return cookie.slice(cookie.indexOf('=') + 1, cookie.indexOf(';'))
+	}
+
+	isValid(list: string[]) {
+		return list.map((cookie, x) => {
+			const [ key, val ] = cookie.split('=');
+			const word = x === 0 && Consts.KEY1 || Consts.KEY2;
+			return key === word && val?.length > 0;
+		});
+	}
+
+	ct1AndIsInvalid(): boolean {
+		return this.list.length === 1 && this.isValid(this.list)[0] === false;
+	}
+	
+	ct1AndIsValid(): boolean {
+		return this.list.length === 1 && this.isValid(this.list)[0];
+	}
+
+	ct2AndIsInvalid(): boolean {
+		return this.list.length === 2 && this.isValid(this.list).includes(false);
+	}
+
+	ct2AndIsValid(): boolean {
+		return this.list.length === 2 && this.isValid(this.list).every(v => v);
+	}
+}
 
 const toData = (params: FetchParams) => {};
 
