@@ -48,14 +48,10 @@ export enum Consts {
 			'year & month saved! </h2> </header>',
 	FOOT = '<footer> 2025, Tim Means. Makes use of the ' + 
 			'<a href="https://getpocket.com/developer/">Pocket API</a>. </footer>',
-	BTN1 = '<button type="button">Login</button>',
-	DOCC = '</body></html>',
 	API1 = 'https://getpocket.com/v3',
-	OPTS = "; Secure; HttpOnly",
 	ERR1 = "Problem with API request: ",
 	PRF1 = "oldest",
 	PRF2 = "30",
 	PRF3 = "1",
 	PRF4 = "complete",
-	BTN2 = '<button type="button">Dashboard</button>',
 }
