@@ -14,13 +14,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-
-import { PageData } from "./pageData";
+import { PageData } from "./models";
 import { Consts } from "./constan";
 
 export default function render(data: PageData): string {
 	const btnOpt = [
-		`<a href="${data.nexRoute}">`,
+		`<a href="${data.buttonLink}">`,
 		`<button type="button">${data.buttonLabel}</button> </a>`,
 	].join(' ');
 
@@ -39,20 +38,6 @@ export default function render(data: PageData): string {
 		}).join(' ');
 	};
 
-	const scrOpt = [
-		'<script> ',
-	].concat(data.nexRoute === Consts.NEX2 && [
-		Consts.COD1,
-		data.token,
-		Consts.COD2,
-	] || []).concat(data.nexRoute === Consts.NEX3 && [
-		Consts.COD4,
-	] || []).concat([
-		data.nexRoute,
-		Consts.COD3,
-		' </script>',
-	]).join('');
-
 	return [
 		Consts.DOCH,
 		Consts.STY1,
@@ -61,7 +46,7 @@ export default function render(data: PageData): string {
 		data.isButton && btnOpt || '',
 		data.isList && uibod(data.list) || '',
 		'</main>',
-		data.isScript && scrOpt || '',
+		data.isScript && `<script> ${data.jscript} </script>` || '',
 		Consts.FOOT,
 		'</body></html>',
 	].join(' ');
