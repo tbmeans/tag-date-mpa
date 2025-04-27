@@ -20,127 +20,198 @@ import views from "./views";
 
 const cap1 = (a: string): string => a[0].toUpperCase() + a.slice(1);
 
-const printScript = function(
-  route: string,
-  isValidCookies: boolean,
-  isCookiePair: boolean,
-  token: string
-): string {
-  if (route.length === 0) {
-    return '';
-  }
-  if (route === models.Consts.NEX1 && isValidCookies === false) {
+const stateHandler = async function(req: Request): Promise<string[]> {
+  const route: string = req.url.slice(1);  // remove leading '/'
+  const cookies = models.AuthCookies.fromClient(req);
+  const authReq = models.listParams(models.Consts.NEX1);
+  
+  if (cookies.isValid() === false && route.length > 0 &&
+      route !== models.Consts.NEX1) {
+    // A controller consisting of a redirect to index serves as an alternative
+    // controller for all routes when request reports no/invalid cookies.
     return [
+      models.Consts.MSG1,
+      '',
+      '',
+      '[]',
+      [
+        models.Consts.COD4,
+        models.Consts.COD3,
+      ].join(''),
+    ];
+  } else if (cookies.isValid() === false && route.length === 0) {
+    // Handle index route controller for a fresh session.
+    return [
+      models.Consts.MSG1,
+      models.Consts.ADDR + models.Consts.NEX1,
+      cap1(models.Consts.NEX1),
+      '[]',
+      ''
+    ];
+  }
+
+  if (cookies.isValid()) {
+    return await stateHandler2(req);
+  } // else the route is NEX1 'login'
+
+  const token = await models.AuthCookies.fromFetch(authReq);
+
+  // If error, 'login' route will show button to try again, like index.
+  if (token[0].includes(models.Consts.ERR1)) {
+    return [
+      token[0],
+      models.Consts.ADDR + models.Consts.NEX1,
+      cap1(models.Consts.NEX1),
+      '[]',
+      ''
+    ];
+  }
+  
+  // For the proper 'login' route controls.
+  return [
+    models.Consts.MSG2,
+    '',
+    '',
+    '[]',
+    [
       models.Consts.COD1,
-      token,
+      token.value(0),
       models.Consts.COD2,
       models.Consts.NEX2,
       models.Consts.COD3,
-    ].join('');
-  } else if (isValidCookies === false) {
+    ].join(''),
+    JSON.stringify(token) /* controller's responder needs this to Set-Cookie
+    but this full string for Set-Cookie does not go in pageData, only the 
+    hash value for script to redir to Pocket goes into pageData. */
+  ];
+};
+ 
+const stateHandler2 = async function(req: Request): Promise<string[]> {
+  const route: string = req.url.slice(1);  // remove leading '/'
+  const cookies = models.AuthCookies.fromClient(req);
+  const authReq = models.listParams(models.Consts.NEX2);
+
+  // We should be here only because stateHandler
+  // determined that the cookies set is valid.
+  // Alt controls for whatever route was dialed: redirect to login route.
+  // BUT HOLD UP NO WE DON'T WANT TO DO LOGIN'S PROCESS OF RE-COOKIE-ING
+  // SO HOW ABOUT LET LOGIN'S CONTROLS APPEAR W/ REDIR TO POCKET, FOR WHATEVER
+  // ROUTE WAS DIALED, AFTERALL. BUT DON'T GIVE A VALUE FOR SET-COOKIE AND
+  // GET THE ONE EXISTING COOKIE'S VALUE FROM REQUEST.
+  // you could only dial a route with one valid cookie if INTERRUPTING
+  // the time delay on the proper login route, so this will make dialing
+  // another route from 'login' look like it does nothin but change address bar
+  if (cookies.isPair() === false && route !== models.Consts.NEX2) {
     return [
-      models.Consts.COD4,
-      models.Consts.COD3,
-    ].join('');
-  } /* else if (route === models.Consts.NEX1 && isCookiePair) {
-    // make a script that redirects to dash
+      models.Consts.MSG2,
+      '',
+      '',
+      '[]',
+      [
+        models.Consts.COD1,
+        models.AuthCookies.value(cookies[0]),
+        models.Consts.COD2,
+        models.Consts.NEX2,
+        models.Consts.COD3,
+      ].join(''),
+    ];
+  }
+
+  if (cookies.isPair()) {
+    return await stateHandler3(req);
+  } // else route is NEX2 'auth'
+
+  const tokens = await models.AuthCookies.fromFetch(authReq);
+
+  // Auth route will show button to try again
+  // Manually skipping pocket login by direct-dialing my app's
+  // 'auth' route SHOULD generate an error per API design/docs.
+  if (tokens[0].includes(models.Consts.ERR1)) {
     return [
+      tokens[0],
+      models.Consts.ADDR + models.Consts.NEX1,
+      cap1(models.Consts.NEX1),
+      '[]',
+      '',
+    ];
+  }
+  
+  // The proper 'auth' route controls.
+  return [
+    models.Consts.MSG3,
+    '',
+    '',
+    '[]',
+    [
       models.Consts.COD4,
       models.Consts.NEX3,
       models.Consts.COD3,
-    ];
-  } else if (route === models.Consts.NEX1) {
-    // therefore this catches 'login' with 1 valid cookie
-    // well we ... really should do same as first case
-    // so that case shouldn't && isValidCOokies === false
-    // but maybe isCookiePair === false
-    // so then next changes to NOT 'login' and INValid cookies
-    // or how bout just series of IFs?
-  }
-  */
-  return '';
+    ].join(''),
+    JSON.stringify(tokens), // Set-Cookie with these
+  ];
 };
 
-const auth = async function(req: Request): Promise<string[]> {
+const stateHandler3 = async function(req: Request): Promise<string[]> {
   const route: string = req.url.slice(1);  // remove leading '/'
-  const cookies = models.AuthCookies.fromClient(req);
-  const authReqHead1 = models.listParams(models.Consts.NEX1);
-  const authReqHead2 = models.listParams(models.Consts.NEX2);
-  let message: string, link: string, label: string, list: string, js: string;
+  const dataReq = models.listParams(models.Consts.NEX3);
 
-  if (cookies.isValid() === false) {
-    if (route.length === 0) {
-      // index route
-      message = models.Consts.MSG1;
-      link = models.Consts.NEX1;
-      label = cap1(models.Consts.NEX1);
-      list = '[]';
-      js = '';
-    } else {
-      let cookie = (route === models.Consts.NEX1 &&
-          await models.AuthCookies.fromFetch(authReqHead1) ||
-              new models.AuthCookies([]));
-      /* Only fetch if route is 'login' otherwise send 'em
-      back to index route to hit button and do process right. */
-      message = (route === models.Consts.NEX1 && models.Consts.MSG2 ||
-          models.Consts.MSG1); // BUT if cookie/token has error though, add error print-out to message and go back to index.
-      link = '';
-      label = '';
-      list = '[]';
-      js = printScript(route, false, false, cookie.value(0));      
-    } 
-  } else if (cookies.isPair() === false) {} else {}
-/*
-	if (cookieCt1AndIsInvalid && route !== Consts.NEX1 ||
-			cookieCt2AndIsInvalid) {
-		controller = controllers.index;
-	} else if (cookieCt1AndIsInvalid && route === Consts.NEX1) {
-		const data = api.toOAuthCookie(api.setOpts(route),
-				{ consumer_key: process.env.CONSUMER_KEY });
-		if (data[0].includes(Consts.ERR1)) {
-			controller = controllers.index;
-			params[1] = data[0] + '<br>';
-		} else {
-			controller = controllers[route];
-			params[1] = api.extractValue(data[0]);
-			res.setHeader('Set-Cookie', data);
-		}
-	} else if (cookieCt1AndIsValid && route !== Consts.NEX2) {
-		controller = controllers.login;
-		params[1] = cookies[0].split('=')[1];
-	} else if (cookieCt1AndIsValid && route === Consts.NEX2) {
-		const data = api.toOAuthCookie(api.setOpts(route), {
-			consumer_key: process.env.CONSUMER_KEY,
-			code: cookies[0].split('=')[1]
-		});
-		if (data[0].includes(Consts.ERR1)) {
-			controller = controllers.index;
-			params[1] = data[0] + '<br>';
-		} else {
-			controller = controllers[route];
-			res.setHeader('Set-Cookie', data);
-		}
-	} else if (cookieCt2AndIsValid && route !== Consts.NEX3) {
-		controller = controllers[Consts.NEX2];
-		// a different message that says 'restarting app' instead of auth's message?
-	} else if (cookieCt2AndIsValid && route === Consts.NEX3) {
-		// api data request to fill app form etc.
-		controller = controllers.app1;
-	} */
+  // We should be here only because prior stateHandlers
+  // determined that the cookies set is valid and count of 2.
+  if (route !== models.Consts.NEX3) {
+    // fully auth'd but requested route besides 'dash'
+    // well then send them to dash where they belong
+    return [
+      models.Consts.MSG4,
+      '',
+      '',
+      '[]',
+      [
+        models.Consts.COD4,
+        models.Consts.NEX3,
+        models.Consts.COD3,
+      ].join(''),
+    ];
+  } /* else if (???) {
+    The above is not appropriate return value for the confirm route.
+    // TO-DO: FIT INTO RETURN DATA HREF FOR BUTTONS TO USE V3/SEND ENDPOINT
+    // THE HREFS WILL INCLUDE X-WWW-URLENCODED ENDPOINT REQ PARAMS.
+    // AND UNIX TIMESTAMP WIDGET FOR V3/GET ENDPOINT.
+		// BUT JUST MARKUP BUTTONS HERE. CALCULATING THE HREF IS CONTROLLER CONCERN.
+  } */
 
-	return [ "hello" ];
-};
-
-const apiq = async function(route: string, token: string): Promise<string[]> {
-    // Use models classes to consume api endpoint
-    return [ "world" ];
+  // regular 'dash' route response
+  const list = await models.PageData.printList(dataReq);
+  return [
+    models.Consts.MSG4,
+    '',
+    '',
+    JSON.stringify(list),
+    '',
+  ];
 }
 
-const resp = function(route: string, cookieList: string[]): string {
-    // Given a route param and cookie in data param, 
-    // put together script if nec.
-    // JSON.parse the list param before plugging into PageData constructor
-	return "!";
+interface ForResponse {
+	rendering: string;
+	headers: Headers;
+}
+
+const respond = function(data: string[]): ForResponse {
+  const [ message, link, label ] = data;
+  const list = JSON.parse(data[3]);
+  const js = data[4];
+  const pageData = new models.PageData(message, link, label, list, js);
+  const rendering = views.render(pageData);
+  const headers = new Headers({ "Content-Type": "text/html" });
+
+  if (data[5]) {
+    const tokens = JSON.parse(data[5]);
+
+    for (let x = 0; x < tokens.length; x++) {
+      headers.append("Set-Cookie", tokens[x]);
+    }
+  }
+
+  return { rendering, headers };
 };
 
-export default { auth, apiq, resp, }
+export default { stateHandler, respond, }
