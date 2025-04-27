@@ -125,9 +125,9 @@ export class AuthCookies {
 		try {
 			const res = await fetch(input, options);
 			if (res.ok === false) {
-				const errmsg: string = `${Consts.ERR1} status ${res.status}`;
-				vals[0] = errmsg;
-				throw new Error(errmsg);
+				const status = res.status;
+				const xerr = res.headers.get("X-Error");
+				vals[0] = `${Consts.ERR1} status ${status}, "${xerr}"`;
 			} else {
 				const jsn = await res.json();
 				const [ dat1, dat2 ]: string[] = Object.values(JSON.parse(jsn));
@@ -148,7 +148,17 @@ export class AuthCookies {
 			return '';
 		}
 		const cookie = this.list[index] ?? '=;';
-		return cookie.slice(cookie.indexOf('=') + 1, cookie.indexOf(';'))
+		const sanskey = cookie.slice(cookie.indexOf('=') + 1);
+		const value = (sanskey.indexOf(';') >= 0 &&
+				sanskey.slice(0, sanskey.indexOf(';')) || sanskey);
+		return value;
+	}
+
+	static value(cookie: string) {
+		const sanskey = cookie.slice(cookie.indexOf('=') + 1);
+		const value = (sanskey.indexOf(';') >= 0 &&
+				sanskey.slice(0, sanskey.indexOf(';')) || sanskey);
+		return value;
 	}
 
 	isValid(): boolean {
