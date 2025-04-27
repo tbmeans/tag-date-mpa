@@ -1,4 +1,4 @@
-// index.ts
+// conf.ts
 /*
    Copyright 2025 Timothy B. Means
 
@@ -19,8 +19,8 @@ import { Config, Context } from "@netlify/functions";
 import controllers from "../../src/controllers";
 
 export default async (req: Request, context: Context) => {
-  const dat = await controllers.stateHandler(req);
-  const res = controllers.respond(dat);
+	const dat = await controllers.stateHandler(req);
+	const res = controllers.respond(dat);
 	return new Response(res.rendering, {
 		status: 200,
 		headers: res.headers
@@ -28,5 +28,5 @@ export default async (req: Request, context: Context) => {
 }
 
 export const config: Config = {
-	path: "/"
+	path: "/conf"
 }
