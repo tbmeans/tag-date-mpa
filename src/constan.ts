@@ -23,7 +23,7 @@ export enum Consts {
 	NEX1 = "login",
 	NEX2 = "auth",
 	NEX3 = "dash",
-	NEX4 = "confirm",
+	NEX4 = "conf",
 	ADDR = 'https://tag-date.netlify.app/',
 	COD1 = 'const DEST = "https://getpocket.com/auth/authorize?request_token=',
 	COD2 = '&redirect_uri=' + ADDR,
