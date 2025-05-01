@@ -16,7 +16,7 @@
   "license": "Apache-2.0",
   "author": "Timothy B. Means",
   "type": "module",
-  "main": "index.js",
+  "main": "netlify/functions/index.ts",
   "scripts": {
     "test": "jest"
   },
