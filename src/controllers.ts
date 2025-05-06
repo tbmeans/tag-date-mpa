@@ -21,7 +21,8 @@ import views from "./views";
 const cap1 = (a: string): string => a[0].toUpperCase() + a.slice(1);
 
 const stateHandler = async function(req: Request): Promise<string[]> {
-  const route: string = req.url.slice(1);  // remove leading '/'
+  // Remove leading '/' and get the route keyword of 4 or 5 chars.
+  const route: string = req.url.slice(1).slice(0, 5);
   const cookies = models.AuthCookies.fromClient(req);
   const authReq = models.listParams(models.Consts.NEX1);
   
@@ -93,7 +94,9 @@ const stateHandler = async function(req: Request): Promise<string[]> {
 };
  
 const stateHandler2 = async function(req: Request): Promise<string[]> {
-  const route: string = req.url.slice(1);  // remove leading '/'
+  // Remove leading '/' and get the route keyword. At this point we are testing
+  // if the route keyword is one of the exactly 4-char constants, auth or dash.
+  const route: string = req.url.slice(1).slice(0, 4);
   const cookies = models.AuthCookies.fromClient(req);
   const authReq = models.listParams(models.Consts.NEX2);
 
@@ -158,9 +161,18 @@ const stateHandler2 = async function(req: Request): Promise<string[]> {
 };
 
 const stateHandler3 = async function(req: Request): Promise<string[]> {
-  const route: string = req.url.slice(1);  // remove leading '/'
+  // Remove leading '/' and get the route keyword, and the only concern left at
+  // this point is whether the keyword is 'dash' or not.
+  const route: string = req.url.slice(1).slice(0, 4);
+
+  if (route !== models.Consts.NEX3) {}
+
+
   const qpos = route.indexOf('?');
   const isQuery = qpos >= 0;
+
+  
+
   const cookies = models.AuthCookies.fromClient(req);
   const urObj = new URL(req.url);
   const qparm = new URLSearchParams(urObj.search);
