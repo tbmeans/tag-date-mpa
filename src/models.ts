@@ -47,16 +47,19 @@ export interface V3Body {
 }
 
 export function listParams(
-	route: string,
+	reqUrl: string,
 	token: string = '',
 	data: V3Body = {}
 ): FetchParams {
-	const name = route.replace('/', '');
+	const qpos = reqUrl.indexOf('?');
+	const isRouteWithQuery = qpos > 0;
+	const stop = isRouteWithQuery ? qpos + 1 : undefined;
+	const name = reqUrl.replace('/', '').slice(0, stop);
 	const names: string[] = [
 		Consts.NEX1,
 		Consts.NEX2,
 		Consts.NEX3,
-		Consts.NEX4,
+		`${Consts.NEX3}?`,
 	];
 	const endpts: string[] = [
 		'/oauth/request',
