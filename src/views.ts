@@ -25,25 +25,40 @@ export default {
 		].join(' ');
 	
 		const uibod = (list: any[]): string => {
+
 			console.log(Object.keys(list[0])); 
 			// I want to know if Pocket has a timestamp of when each item was saved. API Docs don't say.
+			
 			if (typeof list[0] === 'string') {
 				// It's an error message.
 				return `<p>${list[0]}</p>`;
 			}
-			return list.map(item => {
+
+			const top = [ Consts.PAN1, Consts.PAN2 ].join(' ');
+			const fill = list.map(item => {
 				return [
-					`<p id="${item.item_id}">`,
-					`<a href="${item.given_url}">${item.given_title}</a> </p>`
+					Consts.OPGR,
+					Consts.OPCK,
+					`id="${item.item_id}"`,
+					`name="${item.item_id}"`,
+					`value="${item.time_added}"`,
+					Consts.CLCK,
+					`<label for="${item.item_id}">`,
+					`<a href="${item.given_url}">${item.given_title}</a>`,
+					'</label>',
+					`<span><i>${item.time_added}</i></span>`,
+					Consts.CLDV,
 				].join(' ');
 			}).join(' ');
-		}; 
-		// TO-DO: ACTION BUTTONS HREF V3/GET AND V3/SEND ENDPOINTS WITH X-WWW-URLENCODED ENDPOINT REQ PARAMS
-		// BUT JUST MARKUP BUTTONS HERE. CALCULATING THE HREF IS CONTROLLER CONCERN.
+			const btm = Consts.PAN3;
+
+			return [ top, fill, btm ].join(' ');
+		};
 	
 		return [
 			Consts.DOCH,
 			Consts.STY1,
+			Consts.STY2,
 			Consts.BODH,
 			`<main> <p>${data.message}</p>`,
 			data.isButton && btnOpt || '',
