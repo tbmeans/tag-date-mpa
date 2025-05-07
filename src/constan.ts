@@ -42,7 +42,9 @@ export enum Consts {
 									'border: none; border-radius: .4rem; background-color: ' +
 											'#204060; color: #a9a9a9; margin: .5rem; padding: ' +
 													'.5rem 2rem; } button:active { background-color: ' +
-															'#406080; } </style> </head>',
+															'#406080; }',
+	STY2 = 'section { margin: 2rem; } .cols { display: flex; gap: 1rem; ' +
+			'padding: 1rem; } </style> </head>',
 	BODH = '<body> <header> <h2> Bulk tag your Pocket saves <br> with the ' + 
 			'year & month saved! </h2> </header>',
 	FOOT = '<footer> 2025, Tim Means. Makes use of the ' + 
@@ -60,4 +62,23 @@ export enum Consts {
 	DONE = "Selected saves successfully modified.",
 	SOME = "Some actions could not be completed.",
 	BACK = "Return to dashboard",
+	OPGR = '<div class="cols">',
+	CLDV = '</div>',
+	OPCK = '<input type="checkbox"',
+	CLCK = '/>',
+	PAN1 = '<section> ' + OPGR + ' <div> ' + OPCK + ' id="select-all" ' + 
+			'name="select-all"' + CLCK + ' <label for="select-all">Select all' +
+					'</label> ' + CLDV + ' <button form="app-ui" type="submit" name="' +
+							'action" value="tags_add">Tag date</button> <button form="' +
+									'app-ui" type="submit" name="action" value="delete">Delete' +
+											'</button> ' + CLDV + ' </section>', 
+	PAN2 = '<section> <form id="app-ui" action="' + ADDR + NEX3 + '"> ' +
+			'<fieldset> <legend>Select a subset of your saves and click one of ' +
+					'the actions above.</legend>', 
+	PAN3 = '</fieldset> </form> </section>',
+	COD5 = 'const sel = document.getElementById("select-all"); sel.addEvent' +
+			'Listener("change", (e) => { const boxes = Array.from(document.query' +
+					'SelectorAll("form input[type=' + `'checkbox'` + ']")); for (let i' +
+							'= 0; i < boxes.length; i++) { boxes[i].checked = e.target.' +
+									'checked; }});',
 }
