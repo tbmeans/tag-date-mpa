@@ -161,21 +161,58 @@ const stateHandler2 = async function(req: Request): Promise<string[]> {
 };
 
 const stateHandler3 = async function(req: Request): Promise<string[]> {
+  // We should be here only because prior stateHandlers determined that the set
+  // of cookies is valid w/count of 2.
+
   // Remove leading '/' and get the route keyword, and the only concern left at
   // this point is whether the keyword is 'dash' or not.
   const route: string = req.url.slice(1).slice(0, 4);
 
-  if (route !== models.Consts.NEX3) {}
+  // Always reroute to '/dash', no query, when fully auth'd and when the
+  // request, with or without query, does not contain '/dash'. 
+  if (route !== models.Consts.NEX3) {
+    return [
+      models.Consts.MSG5,
+      '',
+      '',
+      '[]',
+      [
+        models.Consts.COD4,
+        models.Consts.NEX3,
+        models.Consts.COD3,
+      ].join(''),
+    ];
+  }
 
+  // Here, the route is 'dash', so now a matter of is there a query following.
+  const queryObj = (new URL(req.url)).searchParams;
+  const accessToken = models.AuthCookies.fromClient(req).value(0);
 
-  const qpos = route.indexOf('?');
-  const isQuery = qpos >= 0;
+  // Response for 'dash' route with query
+  if (queryObj.size > 0) {
+    const modSend = models.listParams(...[
+      req.url,
+      accessToken,
+      { actions: models.actionFactory(queryObj) }
+    ]);
+    const result = await models.PageData.printResult(modSend);
 
-  
+    return [
+      result,
+      models.Consts.ADDR + models.Consts.NEX3,
+      models.Consts.BACK,
+      '[]',
+      ''
+    ];
+  } 
 
-  const cookies = models.AuthCookies.fromClient(req);
-  const urObj = new URL(req.url);
-  const qparm = new URLSearchParams(urObj.search);
+  /* No-query (for now, future will be a ?since) 'dash' route response.
+
+  After determining if the v3/get supports retrievals
+  to a range of time, calendar picker should be put into UI,
+  and then the matchup route for v3/get endpoint will be
+  /dash?since=<datepick value> rather than no query at all */
+
   const firstOfCurMonth = (): number => {
     const date = new Date();
     return new Date(...[
@@ -184,54 +221,17 @@ const stateHandler3 = async function(req: Request): Promise<string[]> {
       1
     ]).valueOf(); // unix time stamp
   };
+
   const dataReq = models.listParams(...[
-    route.slice(0, qpos),
-    '',
-    {
-      consumer_key: process.env.CONSUMER_KEY,
-      access_token: cookies.value(0),
-      sort: "oldest",
-      since: firstOfCurMonth(),
-      /*
-      count?: string; endpoint doc's table says integer but example uses stringified number
-	    offset?: string; endpoint doc's table says integer but example uses stringified number
-	    total?: string; endpoint doc's table says integer but example uses stringified number
-	    detailType?: string;
-      */
-    }
+    req.url,
+    accessToken,
+    { since: firstOfCurMonth(), offset: "0" }
   ]);
-  // const modSend = models.listParams(...[])
 
-  // We should be here only because prior stateHandlers determined that the set
-  // of cookies is valid w/count of 2.
+  const { message, list } = await models.PageData.printList(dataReq);
 
-  if (route !== models.Consts.NEX3 && route !== models.Consts.NEX4) {
-    // Fully auth'd but requested route besides 'dash'
-    // well then send them to dash where they belong
-    return [
-      models.Consts.MSG4,
-      '',
-      '',
-      '[]',
-      [
-        models.Consts.COD4,
-        models.Consts.NEX3, // + query params ?
-        models.Consts.COD3,
-      ].join(''),
-    ];
-  } 
-  
-  if (route === models.Consts.NEX4) {
-    // TO-DO: FIT INTO RETURN DATA HREF FOR BUTTONS TO USE V3/SEND ENDPOINT
-    // THE HREFS WILL INCLUDE X-WWW-URLENCODED ENDPOINT REQ PARAMS.
-    // AND UNIX TIMESTAMP WIDGET FOR V3/GET ENDPOINT.
-		// BUT JUST MARKUP BUTTONS HERE. CALCULATING THE HREF IS CONTROLLER CONCERN.
-  }
-
-  // regular 'dash' route response
-  const list = await models.PageData.printList(dataReq);
   return [
-    models.Consts.MSG4,
+    message,
     '',
     '',
     JSON.stringify(list),
