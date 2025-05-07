@@ -19,29 +19,66 @@ import { Consts } from './constan';
 
 export { Consts }; 
 
-export interface FetchParams {
+interface FetchParams {
   input: string;
   options: RequestInit;
 }
 
-export interface V3Action {
+interface V3Action {
 	action: string;
 	item_id: string;
 	tags?: string;
 	time?: string;
 }
 
-export interface V3Body {
+export function actionFactory(params: URLSearchParams): V3Action[] {
+	const starter = (actionName: string): V3Action => {
+		const toDel = {
+			action: actionName,
+			item_id: '',
+			time: '',
+		};
+		const toTag = {
+			action: actionName,
+			item_id: '',
+			time: '',
+			tags: ''
+		}
+		return actionName === Consts.ACT2 ? toDel : toTag;
+	};
+	const keysInit = Array.from(params.keys());
+	const valsInit = Array.from(params.values());
+	const index = keysInit.indexOf(Consts.ACT0);
+	const actionName = valsInit[index];
+	const keys = keysInit.filter(key => key !== Consts.ACT0);
+	const vals = valsInit.filter((v, k) => k !== index);
+	const toTags = (unixTime: string) => {
+		const t = new Date(parseInt(unixTime) * 1e3);
+		const cal = t.toDateString();
+		const month = `${cal.slice(4, 7)} ${cal.slice(11)}`;
+		return `${month},${t.toLocaleDateString()},${t.toLocaleTimeString()}`;
+	};
+	return keys.map((key, x) => {
+		const obj = starter(actionName);
+		obj.time = `${Math.floor(Date.now() * 1e-3)}`;
+		obj.item_id = key;
+		if (actionName === Consts.ACT1) {
+			obj.tags = toTags(vals[x]);
+		}
+		return obj;
+	});
+};
+
+interface V3Body {
 	consumer_key?: string;
 	redirect_uri?: string;
 	code?: string;
 	access_token?: string;
 	sort?: string;
 	since?: number;
-	tag?: string;
-	count?: string; /* endpoint doc's table says integer but example uses stringified number */
-	offset?: string; /* endpoint doc's table says integer but example uses stringified number */
-	total?: string; /* endpoint doc's table says integer but example uses stringified number */
+	count?: string;
+	offset?: string;
+	total?: string;
 	detailType?: string;
 	actions?: V3Action[];
 }
@@ -81,10 +118,9 @@ export function listParams(
 			access_token: token,
 			sort: Consts.PRF1,
 			since: data.since,
-			tag: data.tag,
-			count: Consts.PRF2,  /* if it turns out really do need int value just parseInt() the string in constants */
-			offset: data.offset, /* parseint if really needs a number */
-			total: Consts.PRF3, /* parseint if really needs a number */
+			count: Consts.PRF2,
+			offset: data.offset,
+			total: Consts.PRF3,
 			detailType: Consts.PRF4
 		},
 		{
@@ -181,6 +217,16 @@ export class AuthCookies {
 	}
 }
 
+interface StatusAndList {
+	message: string;
+	list: object[];
+}
+
+interface ResultsOfMod {
+	action_results: boolean[];
+	status: number;
+}
+
 export class PageData {
 	message: string;
 	buttonLink: string;
@@ -208,17 +254,52 @@ export class PageData {
 		this.isScript = jscript.length > 0;
 	}
 
-	static async printList(params: FetchParams): Promise<object[]> {
-		// this truly belongs in model, it's sourcing data from api endpoints
-		/* const { input, options } = params;
+	static async printList(params: FetchParams): Promise<StatusAndList> {
+		const { input, options } = params;
 		let res: any;
+		let message: string = Consts.MSG4;
+		let list: object[] = [];
 		try {
 			res = await fetch(input, options);
+			if (res.ok === false) {
+				const status = res.status;
+				const xerr = res.headers.get("X-Error");
+				message = `${Consts.ERR1} status ${status}, "${xerr}"`;
+			} else {
+				const jsn = await res.json();
+				list = Object.values(JSON.parse(jsn).list);
+			}
 		} catch (err) {
-		 	res = `{"status":0,"list":{"1234567":{"error":${err.message}}}}`;
+		 	message = `${Consts.ERR1}: ${err.message}`;
 		}
-		 */
-		const res = '{"status":1,"list":{"1234567":{}}}';
-		return Object.values(JSON.parse(res).list);
+		return { message, list };
+	}
+
+	static async printResult(params: FetchParams): Promise<string> {
+		const { input, options } = params;
+		let response: any;
+		let results: ResultsOfMod;
+		let message: string = Consts.DONE;
+		try {
+			response = await fetch(input, options);
+			if (response.ok === false) {
+				const status = response.status;
+				const xerr = response.headers.get("X-Error");
+				return `${Consts.ERR1} status ${status}, "${xerr}"`;
+			}
+			const jsn = await response.json();
+			results = JSON.parse(jsn);
+			if (results.status == 0) {
+				// We could sift through options.body and match its actions items
+				// to the indices of false in results.action_results array,
+				// but all you get is an item_id not a human-recognizable title,
+				// so for now,
+				message = Consts.SOME;
+			}
+		} catch (err) {
+		 	return `${Consts.ERR1}: ${err.message}`;
+		}
+		return message;
 	}
 }
+
