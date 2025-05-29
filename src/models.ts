@@ -107,7 +107,7 @@ export function listParams(
 	const bods: V3Body[] = [
 		{
 			consumer_key: process.env.CONSUMER_KEY,
-			redirect_uri: Consts.ADDR + Consts.NEX2
+			redirect_uri: process.env.ADDR + Consts.NEX2
 		},
 		{
 			consumer_key: process.env.CONSUMER_KEY,
