@@ -15,14 +15,15 @@
    limitations under the License.
 */
 import { PageData } from "./models";
-import { Consts } from "./constan";
+import { Consts } from "./models";
 
 export default {
 	render(data: PageData): string {
-		const btnOpt = [
-			`<a href="${data.buttonLink}">`,
-			`<button type="button">${data.buttonLabel}</button> </a>`,
-		].join(' ');
+		const btnOpt = (
+      `<a href="${data.buttonLink}">
+        <button type="button">${data.buttonLabel}</button>
+      </a>`
+    );
 	
 		const uibod = (list: any[]): string => {
 
@@ -34,39 +35,122 @@ export default {
 				return `<p>${list[0]}</p>`;
 			}
 
-			const top = [ Consts.PAN1, Consts.PAN2 ].join(' ');
 			const fill = list.map(item => {
-				return [
-					Consts.OPGR,
-					Consts.OPCK,
-					`id="${item.item_id}"`,
-					`name="${item.item_id}"`,
-					`value="${item.time_added}"`,
-					Consts.CLCK,
-					`<label for="${item.item_id}">`,
-					`<a href="${item.given_url}">${item.given_title}</a>`,
-					'</label>',
-					`<span><i>${item.time_added}</i></span>`,
-					Consts.CLDV,
-				].join(' ');
-			}).join(' ');
-			const btm = Consts.PAN3;
+				return (
+          `<div class="cols">
+            <input type="checkbox"
+                   id="${item.item_id}"
+                   name="${item.item_id}"
+                   value="${item.time_added}" />
+            <label for="${item.item_id}">
+              <a href="${item.given_url}">
+                ${item.given_title}
+              </a>
+            </label>
+            <span>
+              <i>${item.time_added}</i>
+            </span>
+          </div>`
+        );
+			});
 
-			return [ top, fill, btm ].join(' ');
+			return (
+        `<section>
+          <div class="cols">
+            <div>
+              <input type="checkbox"
+                    id="select-all"
+                    name="select-all" />
+              <label for="select-all">Select all</label>
+            </div>
+            <button form="app-ui"
+                    type="submit"
+                    name="action"
+                    value="tags_add">Tag date</button>
+            <button form="app-ui"
+                    type="submit"
+                    name="action"
+                    value="delete">Delete</button> 
+          </div>
+        </section>
+        <section>
+          <form id="app-ui"
+                action="${process.env.ADDR}${Consts.NEX3}">
+            <fieldset>
+              <legend>
+                Select a subset of your saves and
+                click one of the actions above.
+              </legend> 
+              ${fill}
+            </fieldset>
+          </form>
+        </section>`
+      );
 		};
 	
-		return [
-			Consts.DOCH,
-			Consts.STY1,
-			Consts.STY2,
-			Consts.BODH,
-			`<main> <p>${data.message}</p>`,
-			data.isButton && btnOpt || '',
-			data.isList && uibod(data.list) || '',
-			'</main>',
-			data.isScript && `<script> ${data.jscript} </script>` || '',
-			Consts.FOOT,
-			'</body></html>',
-		].join(' ');
-	},
+		return (
+      `<!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>Tag Pocket saves in bulk</title>
+          <style>
+            body {
+              background-color:#272727;
+              font-family: Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
+              font-family: Arial,Helvetica,sans-serif;
+              color:#789;
+              text-align:center;
+            }
+            h1, h2, h3 {
+              margin: 2rem auto;
+            }
+            footer {
+              padding-top: 2rem;
+            }
+            button {
+              border: none;
+              border-radius: .4rem;
+              background-color: #204060;
+              color: #a9a9a9;
+              margin: .5rem;
+              padding: .5rem 2rem;
+            }
+            button:active {
+              background-color: #406080;
+            }
+            section {
+              margin: 2rem;
+            }
+            .cols {
+              display: flex;
+              gap: 1rem;
+              padding: 1rem;
+            }
+          </style>
+        </head>
+        <body>
+          <header>
+            <h2>
+              Bulk tag your Pocket saves
+              <br>
+              with the year & month saved!
+            </h2>
+          </header>
+          <main>
+            <p>${data.message}</p>
+            ${data.isButton && btnOpt || ''}
+            ${data.isList && uibod(data.list) || ''}
+          </main>
+          <footer>
+            2025, Tim Means. Makes use of the
+            <a href="https://getpocket.com/developer/">Pocket API</a>.
+          </footer>
+          ${data.isScript && `<script>${data.jscript}</script>` || ''}
+        </body>
+      </html>`
+    );
+  }
 }
+
