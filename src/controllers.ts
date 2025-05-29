@@ -20,6 +20,27 @@ import views from "./views";
 
 const cap1 = (a: string): string => a[0].toUpperCase() + a.slice(1);
 
+const sameSite = (route: string = '') => `${process.env.ADDR}${route}`;
+
+const scriptgen = (redirectRoute: string = '') => {
+  return [
+    models.Consts.DEST,
+    sameSite(redirectRoute),
+    models.Consts.NDES,
+    models.Consts.RDIR
+  ].join('');
+};
+
+const redirToPocket = (token: string) => {
+  return [
+    models.Consts.DEST,
+    `${models.Consts.PDES}${token}`,
+    `&redirect_uri=${process.env.ADDR}${models.Consts.NEX2}`,
+    models.Consts.NDES,
+    models.Consts.RDIR
+  ].join('');
+};
+
 const stateHandler = async function(req: Request): Promise<string[]> {
   // Remove leading '/' and get the route keyword of 4 or 5 chars.
   const route: string = req.url.slice(1).slice(0, 5);
@@ -36,10 +57,7 @@ const stateHandler = async function(req: Request): Promise<string[]> {
       '',
       '',
       '[]',
-      [
-        models.Consts.COD4,
-        models.Consts.COD3,
-      ].join(''),
+      scriptgen(),
     ];
   } 
   
@@ -49,7 +67,7 @@ const stateHandler = async function(req: Request): Promise<string[]> {
     // or the user can directly surf to '/login'.
     return [
       models.Consts.MSG1,
-      models.Consts.ADDR + models.Consts.NEX1,
+      sameSite(models.Consts.NEX1),
       cap1(models.Consts.NEX1),
       '[]',
       ''
@@ -66,7 +84,7 @@ const stateHandler = async function(req: Request): Promise<string[]> {
   if (token[0].includes(models.Consts.ERR1)) {
     return [
       token[0],
-      models.Consts.ADDR + models.Consts.NEX1,
+      sameSite(models.Consts.NEX1),
       cap1(models.Consts.NEX1),
       '[]',
       ''
@@ -79,13 +97,7 @@ const stateHandler = async function(req: Request): Promise<string[]> {
     '',
     '',
     '[]',
-    [
-      models.Consts.COD1,
-      token.value(0),
-      models.Consts.COD2,
-      models.Consts.NEX2,
-      models.Consts.COD3,
-    ].join(''),
+    redirToPocket(token.value(0)),
     JSON.stringify(token) /* Controller's responder needs this hash string
     token for Set-Cookie but the Set-Cookie key and "Secure HttpOnly" added
     on to the hash value does not go in pageData, only the hash value, which
@@ -116,13 +128,7 @@ const stateHandler2 = async function(req: Request): Promise<string[]> {
       '',
       '',
       '[]',
-      [
-        models.Consts.COD1,
-        models.AuthCookies.value(cookies[0]),
-        models.Consts.COD2,
-        models.Consts.NEX2,
-        models.Consts.COD3,
-      ].join(''),
+      redirToPocket(models.AuthCookies.value(cookies[0])),
     ];
   }
 
@@ -138,7 +144,7 @@ const stateHandler2 = async function(req: Request): Promise<string[]> {
   if (tokens[0].includes(models.Consts.ERR1)) {
     return [
       tokens[0],
-      models.Consts.ADDR + models.Consts.NEX1,
+      sameSite(models.Consts.NEX1),
       cap1(models.Consts.NEX1),
       '[]',
       '',
@@ -151,11 +157,7 @@ const stateHandler2 = async function(req: Request): Promise<string[]> {
     '',
     '',
     '[]',
-    [
-      models.Consts.COD4,
-      models.Consts.NEX3,
-      models.Consts.COD3,
-    ].join(''),
+    scriptgen(models.Consts.NEX3),
     JSON.stringify(tokens), // Set-Cookie with these
   ];
 };
@@ -176,11 +178,7 @@ const stateHandler3 = async function(req: Request): Promise<string[]> {
       '',
       '',
       '[]',
-      [
-        models.Consts.COD4,
-        models.Consts.NEX3,
-        models.Consts.COD3,
-      ].join(''),
+      scriptgen(models.Consts.NEX3),
     ];
   }
 
@@ -199,7 +197,7 @@ const stateHandler3 = async function(req: Request): Promise<string[]> {
 
     return [
       result,
-      models.Consts.ADDR + models.Consts.NEX3,
+      sameSite(models.Consts.NEX3),
       models.Consts.BACK,
       '[]',
       ''
@@ -235,7 +233,7 @@ const stateHandler3 = async function(req: Request): Promise<string[]> {
     '',
     '',
     JSON.stringify(list),
-    models.Consts.COD5,
+    models.Consts.SELA,
   ];
 }
 
