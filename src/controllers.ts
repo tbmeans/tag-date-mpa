@@ -43,7 +43,7 @@ const redirToPocket = (token: string) => {
 
 const stateHandler = async function(req: Request): Promise<string[]> {
   // Remove leading '/' and get the route keyword of 4 or 5 chars.
-  const route: string = req.url.slice(1).slice(0, 5);
+  const route: string = req.url.replace(`${process.env.ADDR}`, '').slice(0, 5);
   const cookies = models.AuthCookies.fromClient(req);
   const authReq = models.listParams(models.Consts.NEX1);
   
@@ -108,7 +108,7 @@ const stateHandler = async function(req: Request): Promise<string[]> {
 const stateHandler2 = async function(req: Request): Promise<string[]> {
   // Remove leading '/' and get the route keyword. At this point we are testing
   // if the route keyword is one of the exactly 4-char constants, auth or dash.
-  const route: string = req.url.slice(1).slice(0, 4);
+  const route: string = req.url.replace(`${process.env.ADDR}`, '').slice(0, 4);
   const cookies = models.AuthCookies.fromClient(req);
   const authReq = models.listParams(models.Consts.NEX2);
 
@@ -168,7 +168,7 @@ const stateHandler3 = async function(req: Request): Promise<string[]> {
 
   // Remove leading '/' and get the route keyword, and the only concern left at
   // this point is whether the keyword is 'dash' or not.
-  const route: string = req.url.slice(1).slice(0, 4);
+  const route: string = req.url.replace(`${process.env.ADDR}`, '').slice(0, 4);
 
   // Always reroute to '/dash', no query, when fully auth'd and when the
   // request, with or without query, does not contain '/dash'. 
